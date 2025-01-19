@@ -1,0 +1,9 @@
+Flask==3.0.2
+Flask-SQLAlchemy==3.1.1
+mysql-connector-python==8.3.0
+wiremock==2.5.0
+requests==2.31.0
+stripe==11.1.1
+python-dotenv==1.0.1
+flask-cors==4.0.0
+pika

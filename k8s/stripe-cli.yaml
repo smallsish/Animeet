@@ -1,0 +1,24 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: stripe-cli
+  labels:
+    app: stripe-cli
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: stripe-cli
+  template:
+    metadata:
+      labels:
+        app: stripe-cli
+    spec:
+      containers:
+        - name: stripe-cli
+          image: stripe/stripe-cli
+          command: ["stripe", "listen", "--forward-to", "$(make_a_payment_service_url_internal)/webhook", "--api-key", "$(STRIPE_SECRET_KEY)"]
+          envFrom:
+          - secretRef:
+              name: env-vars-production
+  

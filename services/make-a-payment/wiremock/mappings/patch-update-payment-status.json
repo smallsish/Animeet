@@ -1,0 +1,15 @@
+{
+  "request": {
+    "method": "PATCH",
+    "urlPathPattern": "/groups/group123/users/user123"
+  },
+  "response": {
+    "status": 200,
+    "jsonBody": {
+      "message": "Payment status updated"
+    },
+    "headers": {
+      "Content-Type": "application/json"
+    }
+  }
+}

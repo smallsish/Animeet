@@ -1,0 +1,89 @@
+type Event {
+  event_id: Int
+  event_name: String
+  venue: String
+  entry_fee: Float
+  capacity: Int
+  slots_left: Int
+  description: String
+  time: String
+} 
+
+type GetEventResponse {
+  message: String
+  error: String
+  data: Event
+}
+
+type ListEventsResponse {
+  message: String
+  data: [Event]
+}
+
+type DeleteEventData {
+  event_id: Int
+}
+
+type DeleteEventResponse {
+  message: String
+  error: String
+  data: DeleteEventData
+}
+
+type UpdateEventData {
+  event_id: Int
+  event_name: String
+  venue: String
+  entry_fee: Float
+  capacity: Int
+  slots_left: Int
+  description: String
+  time: String
+}
+
+type UpdateEventResponse {
+  message: String
+  error: String
+  data: UpdateEventData
+}
+
+type CreateEventResponse {
+  message: String
+  error: String
+  data: Event
+}
+
+extend type Query {
+  getEvent(event_id: Int!): GetEventResponse
+  listEvents: ListEventsResponse
+}
+
+extend type Mutation {
+  createEvent(
+    name: String!
+    venue: String!
+    entry_fee: Float!
+    capacity: Int!
+    slots_left: Int!
+    description: String
+    time: String!
+  ): CreateEventResponse
+
+  updateEventDetails(
+    event_id: Int!
+    name: String
+    venue: String
+    entry_fee: Float
+    capacity: Int
+    slots_left: Int
+    description: String
+    time: String
+  ): UpdateEventResponse
+
+  updateEventSlots(
+    event_id: Int!
+    slots: Int!
+  ): UpdateEventResponse
+
+  deleteEvent(event_id: Int!): DeleteEventResponse
+}

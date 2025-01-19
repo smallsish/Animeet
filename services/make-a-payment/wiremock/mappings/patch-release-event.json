@@ -1,0 +1,15 @@
+{
+  "request": {
+    "method": "PATCH",
+    "urlPathPattern": "/events/([a-zA-Z0-9-]+)"
+  },
+  "response": {
+    "status": 200,
+    "jsonBody": {
+      "message": "Slot released"
+    },
+    "headers": {
+      "Content-Type": "application/json"
+    }
+  }
+}

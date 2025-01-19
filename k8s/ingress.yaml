@@ -1,0 +1,47 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: minikube-ingress
+  annotations:
+    nginx.ingress.kubernetes.io/limit-rate: "10" # Limit rate to 10 requests per second
+    nginx.ingress.kubernetes.io/limit-burst: "5" # Allow bursts of 5 requests
+    nginx.ingress.kubernetes.io/rewrite-target: /$1
+spec:
+  rules:
+    - http:
+        paths:
+        # - path: /api/v1/graphql
+        #   pathType: Prefix
+        #   backend:
+        #     service:
+        #       name: graphql-service
+        #       port:
+        #         number: 80
+        - path: /rabbitmq
+          pathType: Prefix
+          backend:
+            service:
+              name: rabbitmq
+              port:
+                number: 30008
+        - path: /api/v1/webhook
+          pathType: Prefix
+          backend:
+            service:
+              name: make-a-payment-service
+              port:
+                number: 30006
+        - path: /api/v1/(.*)
+          pathType: ImplementationSpecific
+          backend:
+            service:
+              name: graphql-service
+              port:
+                number: 80
+        - path: /(.*)
+          pathType: ImplementationSpecific
+          backend:
+            service:
+              name: animeet
+              port:
+                number: 8001

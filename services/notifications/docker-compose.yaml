@@ -1,0 +1,68 @@
+services:
+  ####################################
+  # RabbitMQ for Messaging
+  ####################################
+  rabbitmq:
+    image: rabbitmq:3.12-management
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+    ports:
+      - "5672:5672"   # Main RabbitMQ port
+      - "15672:15672" # Management interface port
+    healthcheck:
+      test: ["CMD", "rabbitmqctl", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    networks:
+      - app_network
+
+  ####################################
+  # Notifications Flask Service
+  ####################################
+  notifications:
+    build:
+      context: .
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    environment:
+      RABBITMQ_URL: amqp://guest:guest@rabbitmq:5672/
+      SMTP_SERVER: smtp.gmail.com
+      SMTP_PORT: 587
+      SENDER_EMAIL: animeetcs302@gmail.com
+      SENDER_PASSWORD: trxh ftfm icqk tvne
+    ports:
+      - "5004:5000"  # Expose the Flask app on port 5000
+    command: python /usr/src/app/app.py
+    networks:
+      - app_network
+
+  ####################################
+  # Notifications Consumer Service
+  ####################################
+  notifications-consumer:
+    build:
+      context: .
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    environment:
+      RABBITMQ_URL: amqp://guest:guest@rabbitmq:5672/
+      SMTP_SERVER: smtp.gmail.com
+      SMTP_PORT: 587
+      SENDER_EMAIL: animeetcs302@gmail.com
+      SENDER_PASSWORD: trxh ftfm icqk tvne
+    command: python /usr/src/app/consumer.py
+    networks:
+      - app_network
+
+volumes:
+  rabbitmq_data:
+
+networks:
+  app_network:
+    driver: bridge

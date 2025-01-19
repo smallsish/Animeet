@@ -1,0 +1,4 @@
+extend type Mutation {
+  joinGroupComposite(user_id: Int!, group_id: Int!, event_id: Int!): JoinGroupResponse
+  leaveGroup(user_id: Int!, group_id: Int! event_id: Int!): DeleteUserFromGroupResponse
+} 

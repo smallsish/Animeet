@@ -1,0 +1,16 @@
+{
+    "request": {
+      "method": "GET",
+      "urlPathPattern": "/groups/group123/users/user123/payment-status"
+    },
+    "response": {
+      "status": 200,
+      "jsonBody": {
+        "payment_status": "unpaid"
+      },
+      "headers": {
+        "Content-Type": "application/json"
+      }
+    }
+  }
+  

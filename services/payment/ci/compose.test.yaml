@@ -1,0 +1,28 @@
+services:
+  ####################################
+  # mysql database  
+  ####################################
+  mysql:
+    image: mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: payment
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  ##################################
+  # Pytest on Payment Service
+  ##################################
+  payment-pytest:
+    build:
+      context: ../
+      dockerfile: ci/Dockerfile.test
+    depends_on:
+      - mysql
+    environment:
+      db_conn: mysql+mysqlconnector://root:root@mysql:3306
+      APP_DOMAIN: http://payment-pytest:5000  # Use the Docker service name as domain
+      PYTHONUNBUFFERED: 1

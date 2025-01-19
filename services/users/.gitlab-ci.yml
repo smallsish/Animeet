@@ -1,0 +1,66 @@
+stages:
+  - Static Analysis
+  - Unit Testing
+  - Integration Testing
+  - Release
+
+spotbugs:
+  stage: Static Analysis
+  image: maven:3.8.4-openjdk-17-slim
+  script:
+    - mvn clean compile spotbugs:check
+  allow_failure: false
+  artifacts:
+    paths:
+      - target/spotbugsXml.xml
+    when: always
+
+google-java-format:
+  stage: Static Analysis
+  image: maven:3.8.4-openjdk-17-slim
+  script:
+    - mvn fmt:check
+  allow_failure: false
+  artifacts:
+    paths:
+      - target/fmt-output.txt
+    when: always
+
+unit-testing:
+  stage: Unit Testing
+  image: maven:3.8.4-openjdk-17-slim
+  script:
+    - mvn clean test -Dtest=UserUnitTests
+  allow_failure: false
+  artifacts:
+    paths:
+      - target/surefire-reports/
+    when: always
+
+integration-testing:
+  stage: Integration Testing
+  image: maven:3.8.4-openjdk-17-slim
+  services:
+    - name: docker:dind
+      command: ["--tls=false"]
+  variables:
+    DOCKER_HOST: "tcp://docker:2375"
+    DOCKER_TLS_CERTDIR: ""
+  script:
+    - mvn clean test -Dtest=UserIntegrationTests
+  allow_failure: false
+  artifacts:
+    paths:
+      - target/surefire-reports/
+    when: always
+
+release-image:
+  stage: Release
+  image: docker:27.1.1
+  services:
+    - docker:27.1.1-dind
+  before_script:
+    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
+  script:
+    - docker build --pull -t "$CI_REGISTRY_IMAGE/$CI_COMMIT_BRANCH:latest" -t "$CI_REGISTRY_IMAGE/$CI_COMMIT_BRANCH:$CI_COMMIT_SHA" .
+    - docker push "$CI_REGISTRY_IMAGE/$CI_COMMIT_BRANCH" --all-tags

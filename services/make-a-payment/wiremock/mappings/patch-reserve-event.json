@@ -1,0 +1,15 @@
+{
+  "request": {
+    "method": "PATCH",
+    "urlPathPattern": "/events/event123"
+  },
+  "response": {
+    "status": 200,
+    "jsonBody": {
+      "message": "Slot reserved"
+    },
+    "headers": {
+      "Content-Type": "application/json"
+    }
+  }
+}

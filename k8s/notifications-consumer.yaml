@@ -1,0 +1,23 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: notifications-consumer
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: notifications-consumer
+  template:
+    metadata:
+      labels:
+        app: notifications-consumer
+    spec:
+      containers:
+      - name: notifications-consumer
+        image: registry.gitlab.com/cs302-2024/g4-team7/services/notifications/main:latest
+        envFrom:
+        - secretRef:
+            name: env-vars-production
+        command: ["python", "/usr/src/app/consumer.py"]
+      imagePullSecrets:
+      - name: gitlab-registry-access

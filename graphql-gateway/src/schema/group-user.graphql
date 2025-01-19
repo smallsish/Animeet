@@ -1,0 +1,95 @@
+type GroupUser {
+  group_id: Int
+  user_id: Int
+  role: String
+  date_joined: String
+  payment_status: String
+}
+
+type JoinGroupData {
+  joined: String
+  group_id: Int
+  user_id: Int
+  role: String
+  status: String
+  members: [Int]
+} 
+
+type JoinGroupResponse {
+  message: String
+  error: String
+  data: JoinGroupData
+}
+
+type DeleteUserFromGroupData {
+  group_id: Int
+  user_id: Int
+  members: [Int]
+}
+
+type DeleteUserFromGroupResponse {
+  message: String
+  error: String
+  data: DeleteUserFromGroupData
+}
+
+type UpdateUserInGroupData {
+  group_id: Int
+  user_id: Int
+  role: String
+  payment_status: String
+}
+
+type UpdateUserInGroupResponse {
+  message: String
+  error: String
+  data: UpdateUserInGroupData
+}
+
+type GetAllGroupUsersResponse {
+  data: [GroupUser]
+  message: String
+  error: String
+}
+
+type GetAllUsersFromGroupResponse {
+  data: [GroupUser]
+  message: String
+  error: String
+}
+
+type GetOneUserFromGroupResponse {
+  data: GroupUser
+  message: String
+  error: String
+}
+
+type GetAllGroupsFromUserResponse {
+  data: [Group]
+  message: String
+  error: String
+}
+
+type GetPaymentStatusInGroupData {
+  payment_status: String
+}
+
+type GetPaymentStatusInGroupResponse {
+  data: GetPaymentStatusInGroupData
+  message: String
+  error: String
+}
+
+extend type Query {
+  getAllUsersFromGroup(group_id: Int!): GetAllUsersFromGroupResponse
+  getOneUserFromGroup(group_id: Int!, user_id: Int!): GetOneUserFromGroupResponse
+  getAllGroupUsers: GetAllGroupUsersResponse
+  getAllGroupsFromUser(user_id: Int!): GetAllGroupsFromUserResponse
+  getPaymentStatusInGroup(group_id: Int!, user_id: Int!): GetPaymentStatusInGroupResponse
+}
+
+extend type Mutation {
+  joinGroup(group_id: Int!, user_id: Int!, role: String!, date_joined: String!): JoinGroupResponse
+  removeUserFromGroup(group_id: Int!, user_id: Int!): DeleteUserFromGroupResponse
+  updateUserInGroup(group_id: Int!, user_id: Int!, payment_status: String, role: String): UpdateUserInGroupResponse
+}

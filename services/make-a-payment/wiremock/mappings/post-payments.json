@@ -1,0 +1,15 @@
+{
+    "request": {
+      "method": "POST",
+      "urlPathPattern": "/payments"
+    },
+    "response": {
+      "status": 201,
+      "jsonBody": {
+        "message": "Payment recorded"
+      },
+      "headers": {
+        "Content-Type": "application/json"
+      }
+    }
+  }

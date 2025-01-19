@@ -1,0 +1,12 @@
+type MakeAPaymentResponse {
+  status: String
+  url: String
+  event_name: String
+  price: Float
+  message: String
+  error: String
+}
+
+extend type Mutation {
+  makeAPayment(user_id: Int!, event_id: Int!, group_id: Int!): MakeAPaymentResponse
+}

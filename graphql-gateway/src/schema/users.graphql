@@ -1,0 +1,30 @@
+type User {
+  user_id: Int
+  username: String
+  email: String
+  dob: String
+}
+
+type Error {
+  message: String
+}
+
+type UserResponse {
+  data: User
+  error: Error
+}
+
+type ListUsersData {
+  user_id: Int
+  username: String
+}
+
+type UsersResponse {
+  data: [ListUsersData]
+  error: Error
+}
+
+extend type Query {
+  getUser(user_id: ID!): UserResponse
+  listUsers: UsersResponse
+}

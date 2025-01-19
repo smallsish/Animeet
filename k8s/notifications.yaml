@@ -1,0 +1,50 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: notifications-service
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: notifications-service
+  template:
+    metadata:
+      labels:
+        app: notifications-service
+    spec:
+      containers:
+      - name: notifications-service
+        image: registry.gitlab.com/cs302-2024/g4-team7/services/notifications/main:latest
+        envFrom:
+        - secretRef:
+            name: env-vars-production
+        ports:
+        - containerPort: 5000
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 5000
+          initialDelaySeconds: 5
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 5000
+          initialDelaySeconds: 5
+          periodSeconds: 10
+      imagePullSecrets:
+      - name: gitlab-registry-access
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: notifications-service
+spec:
+  type: ClusterIP
+  selector:
+    app: notifications-service
+  ports:
+  - protocol: TCP
+    port: 30007
+    targetPort: 5000

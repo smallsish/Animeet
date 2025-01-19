@@ -1,0 +1,15 @@
+{
+  "request": {
+    "method": "POST",
+    "url": "/publish-notification"
+  },
+  "response": {
+    "status": 200,
+    "jsonBody": {
+      "message": "Notification published"
+    },
+    "headers": {
+      "Content-Type": "application/json"
+    }
+  }
+}

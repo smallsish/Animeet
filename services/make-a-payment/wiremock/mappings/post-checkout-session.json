@@ -1,0 +1,15 @@
+{
+  "request": {
+    "method": "POST",
+    "url": "/checkout-session"
+  },
+  "response": {
+    "status": 201,
+    "jsonBody": {
+      "url": "http://stripe-session-url"
+    },
+    "headers": {
+      "Content-Type": "application/json"
+    }
+  }
+}

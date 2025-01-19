@@ -1,0 +1,45 @@
+type Group {
+  group_id: Int
+  event_id: Int
+  name: String
+  description: String
+  max_capacity: Int
+  slots_left: Int
+}
+
+type ListGroupsResponse {
+  data: [Group]
+  message: String
+}
+
+type GetGroupResponse {
+  data: Group
+  message: String
+}
+
+type DeleteGroupData {
+  group_id: Int
+}
+
+type DeleteGroupResponse {
+  message: String
+  error: String
+  data: DeleteGroupData
+}
+
+type NewGroupResponse {
+  message: String
+  error: String
+  data: Group
+}
+
+extend type Query {
+  getGroup(group_id: Int!): GetGroupResponse
+  listGroups: ListGroupsResponse
+  getGroupsByEventId(event_id: Int!): ListGroupsResponse
+} 
+
+extend type Mutation {
+  newGroup(event_id: Int, name: String, max_capacity: Int, slots_left: Int, description: String): NewGroupResponse
+  deleteGroup(group_id: Int!): DeleteGroupResponse
+}

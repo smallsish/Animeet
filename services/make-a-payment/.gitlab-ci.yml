@@ -1,0 +1,58 @@
+stages:
+  - Static Analysis
+  - Test
+  - Release
+
+# Flake8 static analysis for code style
+flake8:
+  stage: Static Analysis
+  image: python:3.12-slim
+  script:
+    - pip install flake8
+    - flake8 src | tee flake8_report.txt
+  artifacts:
+    when: on_failure
+    paths:
+      - flake8_report.txt
+  when: manual
+
+# Pylint static analysis for code quality
+pylint:
+  stage: Static Analysis
+  image: python:3.12-slim
+  script:
+    - pip install -r requirements.txt pylint
+    - pylint --fail-under=7 src | tee pylint_report.txt
+  artifacts:
+    when: on_failure
+    paths:
+      - pylint_report.txt
+  when: manual
+
+# Job to run integration tests
+test-integration:
+  stage: Test
+  image: docker:24.0.2
+  services:
+    - docker:24.0.2-dind
+  before_script:
+    - docker info
+    # Build and start services with resource constraints
+    - docker compose -f ci/compose.test.yaml up -d --build
+  script:
+    # Run integration tests in orchestrator service
+    - docker compose -f ci/compose.test.yaml exec -T make-a-payment-service env PYTHONPATH=/usr/src/app/src:/usr/src/app pytest tests/test_integration.py
+  after_script:
+    # Cleanup services and volumes after the tests
+    - docker compose -f ci/compose.test.yaml down -v
+
+release-image:
+  stage: Release
+  image: docker:27.1.1
+  services:
+    - docker:27.1.1-dind
+  before_script:
+    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
+  script:
+    - docker build --pull -t "$CI_REGISTRY_IMAGE/$CI_COMMIT_BRANCH:latest" -t "$CI_REGISTRY_IMAGE/$CI_COMMIT_BRANCH:$CI_COMMIT_SHA" .
+    - docker push "$CI_REGISTRY_IMAGE/$CI_COMMIT_BRANCH" --all-tags

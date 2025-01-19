@@ -1,0 +1,62 @@
+type Payment {
+  payment_id: String      # Stripe payment ID
+  user_id: Int         # User ID associated with the payment
+  group_id: Int         # Group ID associated with the payment
+  date: String     # Date of the payment
+}
+
+type ListPaymentsResponse {
+  data: [Payment]
+  message: String
+}
+
+type GetPaymentResponse {
+  data: [Payment]
+  message: String
+}
+
+type AddPaymentResponse {
+  message: String
+  error: String
+  status: String
+}
+
+extend type Query {
+  listPayments: ListPaymentsResponse
+  getPayment(user_id: Int!): GetPaymentResponse
+}
+
+extend type Mutation {
+  createCheckoutSession(
+    user_id: Int!, 
+    group_id: Int!, 
+    event_id: Int!, 
+    event_name: String!, 
+    price: Float!, 
+    amount: Int!
+  ): CheckoutSession
+  refundPayment(payment_id: String!): RefundStatus
+  deletePayment(payment_id: String!): DeletionStatus
+  addPayment(payment_id: String!, user_id: Int!, group_id: Int!, date: String!): AddPaymentResponse
+}
+
+type CheckoutSession {
+  session_id: String     # Unique session ID for the checkout session
+  url: String            # URL to the checkout page
+  status: String         # Status of the session (e.g., created, completed)
+  message: String
+  error: String
+  event_name: String     # Name of the event associated with the payment
+  price: Float           # Price of the event
+}
+
+type RefundStatus {
+  status: String         # Status of the refund (e.g., succeeded, failed)
+  refund_id: String      # ID of the refund, if available
+  error: String
+}
+
+type DeletionStatus {
+  message: String        # Confirmation or error message
+  error: String
+}

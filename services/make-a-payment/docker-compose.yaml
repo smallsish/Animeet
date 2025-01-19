@@ -1,0 +1,268 @@
+services:
+  ####################################
+  # Make a Payment (Composite) Service
+  ####################################
+  make-a-payment:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "5003:5000"
+    environment:
+      events_service_url_internal: http://events:5000
+      payment_service_url_internal: http://payment:5000
+      groups_service_url_internal: http://groups:5000
+      users_service_url_internal: http://users:5000
+      notifications_service_url_internal: http://notifications:5000
+      MAKE-A-PAYMENT_URL: http://make-a-payment:5000
+      STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY}
+      STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET}
+      PYTHONUNBUFFERED: 1
+    depends_on:
+      - events
+      - payment
+      - groups
+      - users
+      - notifications
+    networks:
+      - app_network
+
+  ####################################
+  # RabbitMQ for Messaging
+  ####################################
+  rabbitmq:
+    image: rabbitmq:3.12-management
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+    ports:
+      - "5672:5672"   # Main RabbitMQ port
+      - "15672:15672" # Management interface port
+    healthcheck:
+      test: ["CMD", "rabbitmqctl", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    networks:
+      - app_network
+
+  ####################################
+  # Notifications Service
+  ####################################
+  notifications:
+    build:
+      context: ../notifications
+      dockerfile: Dockerfile
+    ports:
+      - "5004:5000"
+    environment:
+      RABBITMQ_URL: amqp://guest:guest@rabbitmq:5672/
+      SMTP_SERVER: smtp.gmail.com
+      SMTP_PORT: 587
+      SENDER_EMAIL: animeetcs302@gmail.com
+      SENDER_PASSWORD: trxh ftfm icqk tvne
+      PYTHONUNBUFFERED: 1
+      FLASK_ENV: development
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      - app_network
+
+  ####################################
+  # Notifications Consumer Service
+  ####################################
+  notifications-consumer:
+    build:
+      context: ../notifications
+      dockerfile: Dockerfile
+    environment:
+      RABBITMQ_URL: amqp://guest:guest@rabbitmq:5672/
+      SMTP_SERVER: smtp.gmail.com
+      SMTP_PORT: 587
+      SENDER_EMAIL: animeetcs302@gmail.com
+      SENDER_PASSWORD: trxh ftfm icqk tvne
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    command: python /usr/src/app/consumer.py
+    networks:
+      - app_network
+
+  ####################################
+  # Events Service
+  ####################################
+  events:
+    build:
+      context: ../events
+      dockerfile: Dockerfile
+    ports:
+      - "5005:5000"
+    environment:
+      db_conn: mysql+mysqlconnector://root:root@mysql-events:3306
+      PYTHONUNBUFFERED: 1
+      FLASK_ENV: development
+    depends_on:
+      mysql-events:
+        condition: service_healthy
+    volumes:
+      - ./src:/app/src
+    networks:
+      - app_network
+
+  mysql-events:
+    image: mysql:8.0
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: event
+    ports:
+      - "3307:3306"
+    volumes:
+      - ../events/db-schema:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-proot"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - app_network
+
+  ####################################
+  # Groups Service
+  ####################################
+  groups:
+    build:
+      context: ../groups
+      dockerfile: Dockerfile
+    ports:
+      - "5007:5000"
+    environment:
+      db_conn: mysql+mysqlconnector://root:root@mysql-groups:3306
+      PYTHONUNBUFFERED: 1
+      FLASK_ENV: development
+    depends_on:
+      mysql-groups:
+        condition: service_healthy
+    volumes:
+      - ./src:/app/src
+    networks:
+      - app_network
+
+  mysql-groups:
+    image: mysql:8.0
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: group
+    ports:
+      - "3308:3306"
+    volumes:
+      - ../groups/db-schema:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-proot"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - app_network
+
+  ####################################
+  # Payment Service
+  ####################################
+  payment:
+    build:
+      context: ../payment
+      dockerfile: Dockerfile
+    ports:
+      - "5001:5000"
+    environment:
+      db_conn: mysql+mysqlconnector://root:root@mysql-payment:3306
+      APP_DOMAIN: http://localhost:5001
+      STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY}
+      STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET}
+      PYTHONUNBUFFERED: 1
+      FLASK_ENV: development
+    depends_on:
+      mysql-payment:
+        condition: service_healthy
+    volumes:
+      - ./src:/app/src
+    networks:
+      - app_network
+
+  mysql-payment:
+    image: mysql:8.0
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: payment
+    ports:
+      - "3309:3306"
+    volumes:
+      - ../payment/db-schema:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-proot"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - app_network
+    
+  ####################################
+  # Stripe CLI for Webhook Testing
+  ####################################
+  stripe-cli:
+    image: stripe/stripe-cli
+    environment:
+      STRIPE_API_KEY: ${STRIPE_SECRET_KEY}
+    command: "listen --forward-to http://make-a-payment:5000/webhook"
+    depends_on:
+      - payment
+    networks:
+      - app_network
+
+  ####################################
+  # User Service
+  ####################################
+  users:
+    build:
+      context: ../users
+      dockerfile: Dockerfile
+    ports:
+      - "5006:5000"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql-user:3306/user
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: root
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      SPRING_JPA_PROPERTIES_HIBERNATE_DIALECT: org.hibernate.dialect.MySQLDialect
+      SERVER_PORT: 5000
+    depends_on:
+      mysql-user:
+        condition: service_healthy
+    networks:
+      - app_network
+
+  mysql-user:
+    image: mysql:8.0
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: user
+    ports:
+      - "3310:3306"
+    volumes:
+      - ../users/db-schema:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-proot"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - app_network
+
+volumes:
+  rabbitmq_data:
+
+networks:
+  app_network:
+    driver: bridge

@@ -1,0 +1,9 @@
+type HealthResponse {
+  ip_address: String
+  message: String
+  service: String
+}
+
+type Query {
+  healthCheck(service: String!): HealthResponse
+}

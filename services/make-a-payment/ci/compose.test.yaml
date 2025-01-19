@@ -1,0 +1,35 @@
+services:
+  ####################################
+  # Make a Payment (Composite) Service
+  ####################################
+  make-a-payment-service:
+    build:
+      context: ../  # Root context, adjust if needed
+      dockerfile: ci/Dockerfile.test  # Dockerfile for testing setup
+    depends_on:
+      wiremock:
+        condition: service_healthy
+    environment:
+      EVENTS_SERVICE_URL: http://wiremock:8080
+      PAYMENT_SERVICE_URL: http://wiremock:8080
+      GROUPS_SERVICE_URL: http://wiremock:8080
+      USERS_SERVICE_URL: http://wiremock:8080
+      NOTIFICATIONS_SERVICE_URL: http://wiremock:8080
+      PYTHONUNBUFFERED: 1
+    command: ["pytest", "tests/test_integration.py"]  # Command to run integration tests in the container
+
+  ####################################
+  # WireMock Service for Mocking External APIs
+  ####################################
+  wiremock:
+    image: rodolpheche/wiremock
+    platform: linux/amd64
+    ports:
+      - "8080:8080"  # Expose WireMock on the default port
+    volumes:
+      - ../wiremock/mappings:/home/wiremock/mappings  # Load API mappings for mocked services
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/__admin"]
+      interval: 10s
+      timeout: 5s
+      retries: 5

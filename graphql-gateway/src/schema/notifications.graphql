@@ -1,0 +1,21 @@
+type NotificationStatus {
+  message: String          # Status message of the notification request
+  user_id: Int             # ID of the user receiving the notification
+  event_id: Int            # ID of the event related to the notification
+  user_name: String        # Name of the user
+  event_name: String       # Name of the event
+  price: String            # Formatted price in dollars
+  email: String            # Email address of the user
+  error: String            # Error message, if any
+}
+
+extend type Mutation {
+  publishNotification(
+    user_id: Int!
+    event_id: Int!
+    user_name: String!
+    event_name: String!
+    price: Int!                        # Price in cents, to be converted in the service
+    email: String!
+  ): NotificationStatus               # Publish a notification with event and user details
+}

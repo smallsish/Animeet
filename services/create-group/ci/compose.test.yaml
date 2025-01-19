@@ -1,0 +1,13 @@
+services:
+  ##################################
+  # Pytest on Create-group Service
+  ##################################
+  create-group-pytest:
+    build:
+      context: ../
+      dockerfile: ci/Dockerfile.test
+    environment:
+      groups_service_url: http://localhost:30000
+      groups_service_url_internal: http://groups:5000
+      events_service_url: http://localhost:31000
+      events_service_url_internal: http://events:5000

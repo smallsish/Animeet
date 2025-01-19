@@ -1,0 +1,20 @@
+type ResponseData {
+    group_data: Group
+    event_data: Event
+}
+
+type CreateGroupResponse {
+    message: String
+    error: String
+    data: ResponseData
+}
+
+type Mutation {
+    createGroup(
+        event_id: Int!
+        user_id: Int!
+        name: String!
+        max_capacity: Int!
+        description: String
+    ): CreateGroupResponse
+}

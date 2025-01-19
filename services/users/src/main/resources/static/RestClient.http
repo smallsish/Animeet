@@ -1,0 +1,23 @@
+########################
+### GLOBAL VARIABLES ###
+########################
+
+@baseurl = http://localhost:5000/
+
+
+####################
+### USER METHODS ###
+####################
+
+/// Get users
+GET {{baseurl}}/users
+
+###
+
+// Get details of user
+GET {{baseurl}}/users/2
+
+###
+
+// Health check
+GET {{baseurl}}/health

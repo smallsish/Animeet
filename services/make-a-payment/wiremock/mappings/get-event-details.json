@@ -1,0 +1,19 @@
+{
+  "request": {
+    "method": "GET",
+    "urlPathPattern": "/events/event123"
+  },
+  "response": {
+    "status": 200,
+    "jsonBody": {
+      "data": {
+        "entry_fee": 100.0,
+        "event_name": "Sample Event",
+        "time": "Fri, 15 Nov 2024 12:00:00 UTC"
+      }
+    },
+    "headers": {
+      "Content-Type": "application/json"
+    }
+  }
+}
